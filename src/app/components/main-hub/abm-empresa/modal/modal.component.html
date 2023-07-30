@@ -1,0 +1,23 @@
+<div mat-dialog-content>
+    <form [formGroup]="editForm" class="flex justify-around">
+        <mat-form-field appearance="fill" class="w-1/3">
+            <mat-label>{{this.data.mode}}</mat-label>
+            <input matInput formControlName="descripcion">
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="w-1/3">
+          <mat-label>Estado</mat-label>
+          <mat-icon mat-icon matPrefix class="mr-4">
+              assignment_turned_in
+          </mat-icon>
+          <mat-select formControlName="estado">
+              <mat-option *ngFor="let estado of estados" [value]="estado.id">
+                {{estado.descripcion}}
+              </mat-option>
+          </mat-select>
+      </mat-form-field>
+    </form>
+</div>
+<div mat-dialog-actions class="flex justify-end gap-x-4">
+  <button mat-dialog-close mat-button [style.background-color]="colours.warnButtonColor" class="text-white"(click)="cancel()">Cancelar</button>
+  <button mat-button mat-dialog-close [style.background-color]="colours.mainButtonColor" class="text-white" cdkFocusInitial (click)="accept()">Aceptar</button>
+</div>

@@ -1,0 +1,150 @@
+<div class="flex w-full">
+    <div class="flex flex-col w-full pr-8 pl-8 mt-10 mb-4">
+        <form [formGroup]="actividadForm">
+            <div class="row flex flex-row mb-4">
+                <mat-form-field class="w-1/2 pr-6">
+                    <mat-label>Empresa</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        work
+                    </mat-icon>
+                    <mat-select formControlName="empresa" (selectionChange)="empresaChange($event)">
+                        <mat-option *ngFor="let empresa of empresas" [value]="empresa.id">
+                            {{empresa.descripcion}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-1/2 pl-6">
+                    <mat-label>Cuestionario</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        description
+                    </mat-icon>
+                    <mat-select formControlName="cuestionario" (selectionChange)="cuestionarioChange($event)">
+                        <mat-option *ngFor="let cuestionario of cuestionarios" [value]="cuestionario.id_cuestionario">
+                            {{cuestionario.descripcion_cuestionario}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row mb-8">
+                <mat-form-field class="w-1/2">
+                    <mat-label>Nombre de actividad</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        description
+                    </mat-icon>
+                    <input matInput [formControlName]="'actividad'">
+                </mat-form-field>
+                <mat-form-field class="w-1/2 pl-6">
+                    <mat-label>Estado</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        assignment_turned_in
+                    </mat-icon>
+                    <mat-select [formControlName]="'estado'" placeholder='Estado'>
+                        <mat-option *ngFor="let estado of estados" [value]="estado.id">{{estado.descripcion}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row">
+                <mat-form-field class="w-1/3 mr-8">
+                    <mat-label>Fecha</mat-label>
+                    <input id="fechaPlanificacion" matInput [matDatepicker]="picker" [formControlName]="'fecha'">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+                <mat-form-field class="w-1/3 mr-8">
+                    <mat-label>Desde</mat-label>
+                    <input matInput type="time" [formControlName]="'horaMin'">
+                </mat-form-field>
+                <mat-form-field class="w-1/3">
+                    <mat-label>Hasta</mat-label>
+                    <input matInput type="time" [formControlName]="'horaMax'">
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row justify-around mb-8">
+                <mat-checkbox color="primary" [formControlName]="'repetirDiario'" (change)="checkChange('repetirDiario', $event)">REPETIR DIARIO</mat-checkbox>
+                <mat-checkbox color="primary" [formControlName]="'todasLasSemanas'" (change)="checkChange('todasLasSemanas', $event)">TODAS LAS SEMANAS</mat-checkbox>
+                <mat-checkbox color="primary" [formControlName]="'diasLaborales'" (change)="checkChange('diasLaborales', $event)">DÍAS LABORALES</mat-checkbox>
+            </div>
+            <div class="row flex flex-row justify-around">
+                <mat-form-field class="w-full">
+                    <mat-label>Lider</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        work
+                    </mat-icon>
+                    <mat-select formControlName="lider" (selectionChange)="liderSelectionChange($event.value)">
+                        <mat-option *ngFor="let user of usuariosLider" [value]="user.rut">
+                            {{user.apellido}}, {{user.nombre}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row justify-around">
+                <mat-form-field class="w-full">
+                    <mat-label>Participantes</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        work
+                    </mat-icon>
+                    <mat-select formControlName="participantes" multiple (selectionChange)="changeSelectFormat()">
+                        <mat-select-trigger>
+                            <span>{{newSelection}}</span>
+                        </mat-select-trigger>
+                        <mat-option *ngFor="let user of usuarios" [value]="user.rut">
+                            {{user.apellido}}, {{user.nombre}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </form>
+        <div class="row mt-8"><h3>Adicionales<hr></h3></div>
+        <form [formGroup]="adicionalForm">
+            <div class="row flex flex-row">
+                <mat-form-field class="w-1/4 mr-4">
+                    <mat-label>Nombre</mat-label>
+                    <input matInput [formControlName]="'nombre'">
+                </mat-form-field>
+                <mat-form-field class="w-1/4 mr-4">
+                    <mat-label>RUT</mat-label>
+                    <input matInput type="number" [formControlName]="'rut'">
+                </mat-form-field>
+                <mat-form-field class="w-1/4 mr-4">
+                    <mat-label>Cargo</mat-label>
+                    <input matInput [formControlName]="'cargo'">
+                </mat-form-field>
+                <div class="w-1/4 flex">
+                    <button mat-button class="text-white h-9 w-full" type="button" [style.background-color]="colours.mainButtonColor" (click)="addAdicional()">Agregar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="flex w-full pl-8 pr-8 mb-8">
+    <div class="w-full" *ngIf="adicionales.length > 0">
+        <table #table id="table" mat-table [dataSource]="adicionales" class="mat-elevation-z8 w-full mt-8">
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef> Nombre </th>
+              <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="rut">
+                <th mat-header-cell *matHeaderCellDef> RUT </th>
+                <td mat-cell *matCellDef="let element"> {{element.rut}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="cargo">
+                <th mat-header-cell *matHeaderCellDef> Cargo </th>
+                <td mat-cell *matCellDef="let element"> {{element.cargo}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element" class="text-right">
+                    <button class="ml-2">
+                        <mat-icon matTooltip="Eliminar" (click)="deleteAdicional(element)">delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+          
+            <tr mat-header-row *matHeaderRowDef="['nombre', 'rut', 'cargo', 'acciones']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['nombre', 'rut', 'cargo', 'acciones'];"></tr>
+        </table>
+    </div>
+</div>

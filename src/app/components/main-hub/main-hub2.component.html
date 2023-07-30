@@ -1,0 +1,55 @@
+<mat-sidenav-container class="example-container">
+    <mat-sidenav #sidenav mode="over" [(opened)]="opened"
+         class="w-1/2 sm:w-1/3 lg:w-1/5" [style.background-color]="colours.backgroundColorDark">
+         <div>
+            <img src="/assets/images/user-photo.jpg" alt="" class="rounded-full h-36" style="margin: 2rem auto;">
+            <h2 class="text-center" style="color: white;">{{username}}</h2>
+         </div>
+         <mat-list>
+            <mat-list-item class="nav-item-color hover:cursor-pointer" [routerLink]="'/dashboard2/empresa'" (click)="closeNav()"> <mat-icon class="mr-4">work</mat-icon> ABM Empresa </mat-list-item>
+            <mat-list-item class="nav-item-color hover:cursor-pointer" [routerLink]="'/dashboard2/usuario'" (click)="closeNav()"> <mat-icon class="mr-4">face</mat-icon> ABM Usuario </mat-list-item>
+            <mat-list-item class="nav-item-color hover:cursor-pointer" [routerLink]="'/dashboard2/turno-jornada'" (click)="closeNav()"> <mat-icon class="mr-4">hourglass_top</mat-icon> ABM Turno/Jornada </mat-list-item>
+            <mat-list-item class="nav-item-color hover:cursor-pointer" [routerLink]="'/dashboard2/cuestionario'" (click)="closeNav()"> <mat-icon class="mr-4">quiz</mat-icon> ABM Cuestionario </mat-list-item>
+        </mat-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+        <div class="h-40" [style.background-color]="colours.backgroundColor">
+            <div class="flex flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent h-full">
+                <div class="flex-1 min-w-0">
+                    <div>
+                        <div class="flex flex-wrap items-center font-medium">
+                            <button mat-button (click)="sidenav.toggle()" class="h-16"><mat-icon>menu</mat-icon></button>
+                            <div>
+                                <a class="whitespace-nowrap text-primary-500">Dashboard</a>
+                            </div>
+                            <div class="flex items-center ml-1 whitespace-nowrap">
+                                <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right" data-mat-icon-namespace="heroicons_solid">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </mat-icon>
+                                <span class="ml-1 text-secondary">{{seccionActual}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 ml-16">
+                        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">{{titulo}}</h2>
+                    </div>
+                </div>
+                <div class="flex shrink-0 items-center mt-0 ml-4 sm:ml-4" *ngIf="nombreBoton != ''">
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [style.background-color]="colours.backgroundColorDark" (click)="buttonAction()">
+                        <span class="mat-button-wrapper">
+                            {{nombreBoton}}
+                        </span>
+                        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                        <span class="mat-button-focus-overlay"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="content-scroll">
+            <router-outlet (activate)="componentAdded($event)"></router-outlet>
+        </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

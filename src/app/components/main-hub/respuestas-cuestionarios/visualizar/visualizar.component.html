@@ -1,0 +1,64 @@
+<div class="flex flex-col w-full">
+    <div class="my-8 w-4/5 ml-auto mr-auto">
+        <form [formGroup]="datosUsuarioForm" class="flex justify-between flex-col">
+            <div class="row w-full flex justify-around">
+                <mat-form-field class="w-1/5">
+                    <mat-label>Rut</mat-label>
+                    <input matInput [formControlName]="'rut'">
+                </mat-form-field>
+                <mat-form-field class="w-1/3">
+                    <mat-label>Ubicación</mat-label>
+                    <input matInput [formControlName]="'ubicacion'">
+                </mat-form-field>
+                <mat-form-field class="w-1/4">
+                    <mat-label>Fecha de Carga</mat-label>
+                    <input matInput [formControlName]="'fechaCarga'">
+                </mat-form-field>
+            </div>
+        </form>
+        <div class="flex justify-between flex-col">
+            <mat-form-field class="w-full">
+                <mat-label>Sección</mat-label>
+                <mat-select (selectionChange)="changeSeccion($event.value)" [value]="cabeceraSecId">
+                    <mat-option *ngFor="let seccion of modeloCuestionario.secciones" [value]="seccion.sec_id">{{seccion.sec_descripcion}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div>
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 w-full mt-8">
+                <ng-container matColumnDef="pregunta">
+                  <th mat-header-cell *matHeaderCellDef> Pregunta </th>
+                  <td mat-cell *matCellDef="let element"> {{element.descripcion}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="tipo">
+                    <th mat-header-cell *matHeaderCellDef> Tipo </th>
+                    <td mat-cell *matCellDef="let element"> {{element.tipo | tipoPregunta}} </td>
+                  </ng-container>
+              
+                <ng-container matColumnDef="valor">
+                  <th mat-header-cell *matHeaderCellDef> Valor </th>
+                  <td mat-cell *matCellDef="let element"> {{element.tipo != 13 ? element.valor : ''}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let row" class="text-right">
+                        <button *ngIf="row.imgId != 0 && row.imgId != undefined">
+                            <mat-icon matTooltip="Ver" (click)="open(row)">visibility</mat-icon>
+                        </button>
+                        <button *ngIf="(row.valor == 'NO' || row.tipo == 10) && row.imgId != 0 && row.imgId != undefined">
+                            <mat-icon matTooltip="Justificación" (click)="openJustification(row)">description</mat-icon>
+                        </button>
+                        <button *ngIf="row.tipo == 13">
+                            <mat-icon matTooltip="Ver lista" (click)="openLista(row)">visibility</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+              
+                <tr mat-header-row *matHeaderRowDef="['pregunta', 'tipo', 'valor', 'acciones']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['pregunta', 'tipo', 'valor', 'acciones'];"></tr>
+            </table>
+        </div>
+    </div>
+</div>

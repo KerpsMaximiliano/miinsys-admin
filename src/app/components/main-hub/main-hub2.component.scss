@@ -1,0 +1,22 @@
+.example-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #eee;
+}
+
+.nav-item-color {
+    color: white;
+    mat-icon {
+        color: white;
+    }
+}
+
+.content-scroll {
+    display:Flex;
+   flex-direction:column;
+   flex-wrap:wrap;
+   overflow-y: scroll;
+}

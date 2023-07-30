@@ -1,0 +1,13 @@
+<div>
+    <img [src]="imgSrc" class="ml-auto mr-auto rounded" style="max-height: 70vh;" alt="" *ngIf="imgSrc != '' && type == 'image'">
+    <video [src]="imgSrc" controls style="max-height: 70vh;" *ngIf="imgSrc != '' && type == 'video'"></video>
+    <h2 *ngIf="type == 'text'">{{justificacion}}</h2>
+    <form *ngIf="type == 'list'" class="flex flex-col w-full">
+        <mat-form-field *ngFor="let item of lista" class="row" [formGroup]="listaForm">
+            <!-- <b>{{item.campo}}</b> - {{item.valor}} -->
+            <mat-label>{{item.campo}}</mat-label>
+            <input matInput [formControlName]="item.campo">
+        </mat-form-field>
+    </form>
+    <mat-spinner *ngIf="imgSrc == '' && justificacion == '' && lista.length == 0"></mat-spinner>
+</div>

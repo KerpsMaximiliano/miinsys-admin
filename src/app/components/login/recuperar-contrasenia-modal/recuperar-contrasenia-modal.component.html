@@ -1,0 +1,14 @@
+<h2>Recuperar contraseña</h2>
+<form [formGroup]="form" class="w-2/3 mx-auto">
+    <mat-form-field appearance="legacy" class="w-full">
+        <mat-label>Id/RUT</mat-label>
+        <input matInput type="number" formControlName = "usuario" autocomplete="off">
+        <mat-icon mat-icon matPrefix class="mr-2">
+            person
+        </mat-icon>
+    </mat-form-field>
+</form>
+<div mat-dialog-actions class="flex justify-end gap-4">
+    <button mat-stroked-button (click)="dialogRef.close('TEST')" color="warn" class="pr-4">Cancelar</button>
+    <button mat-flat-button cdkFocusInitial (click)="recuperar()" color="primary">Enviar</button>
+  </div>

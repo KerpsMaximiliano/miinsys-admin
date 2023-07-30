@@ -1,0 +1,126 @@
+<div class="flex w-full">
+    <div class="flex flex-col w-2/3 pr-8 pl-8 mt-20 mb-4">
+        <form [formGroup]="usuarioForm">
+            <div class="row flex flex-row">
+                <mat-form-field class="w-1/2 pr-6">
+                    <mat-label>Nombre</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        person
+                    </mat-icon>
+                    <input matInput type="text" name="nombre" formControlName="firstName">
+                </mat-form-field>
+                <mat-form-field class="w-1/2 pl-6">
+                    <mat-label>Apellido</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        person
+                    </mat-icon>
+                    <input matInput type="text" name="apellido" formControlName="lastName">
+                </mat-form-field>
+            </div>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>RUT</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    badge
+                </mat-icon>
+                <input matInput type="number" name="rut" formControlName="rut">
+            </mat-form-field>
+            <div class="w-1/3">
+                <button mat-button class="w-1/8 text-white" type="button" [style.background-color]="colours.mainButtonColor" (click)="uploadFoto()">Subir foto</button>
+            </div>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>E-Mail</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    alternate_email
+                </mat-icon>
+                <input matInput type="text" name="email" formControlName="email">
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Contraseña</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    lock
+                </mat-icon>
+                <mat-icon mat-icon matSuffix class="mr-4" matTooltip="Mínimo 8 caracteres, al menos una letra y un número">
+                    info
+                </mat-icon>
+                <mat-icon mat-icon matSuffix class="mr-4 cursor-pointer" matTooltip="Generar contraseña" (click)="generatePassword()">
+                    sync
+                </mat-icon>
+                <input matInput type="text" name="contraseña" formControlName="contraseña">
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Estado</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    assignment_turned_in
+                </mat-icon>
+                <mat-select formControlName="estado">
+                    <mat-option *ngFor="let estado of estados" [value]="estado.id">{{estado.descripcion}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Rol</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    assignment_turned_in
+                </mat-icon>
+                <mat-select formControlName="rol" (selectionChange)="rolChange()">
+                    <mat-option *ngFor="let rol of roles" [value]="rol.id_rol">{{rol.descripcion}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <div class="w-full flex flex-row" *ngIf="usuarioForm.get('rol')?.value != 1">
+                <mat-form-field class="w-2/3 mt-8">
+                    <mat-label>Empresa</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        business_center
+                    </mat-icon>
+                    <mat-select formControlName="empresa">
+                        <mat-option *ngFor="let empresa of empresas" [value]="empresa.id">{{empresa.descripcion}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <div class="w-1/3 mt-8 ml-8">
+                    <button mat-button class="w-1/8 text-white" type="button" [style.background-color]="colours.mainButtonColor" (click)="addEmpresa()">Agregar empresa</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <mat-card class="w-1/3 mr-4 pl-4 text-center mt-8 mb-1 h-2/3" [style.background-color]="colours.secondaryBackgroundColor">
+        <mat-icon class="text-center w-full mr-16 mt-8" style="font-size: 6rem;" *ngIf="imgSrc == ''">account_box</mat-icon>
+        <img [src]="imgSrc" class="ml-auto mr-auto rounded max-h-28" alt="" *ngIf="imgSrc != ''">
+        <h2 class="pt-4">{{usuarioForm.get('lastName')?.value || "Apellido"}}, {{usuarioForm.get('firstName')?.value || "Nombre"}}</h2>
+        <h2>{{usuarioForm.get('rut')?.value || "RUT"}}</h2>
+        <h2>{{usuarioForm.get('email')?.value || "E-Mail"}}</h2>
+        <h2>{{usuarioForm.get('contraseña')?.value || "Contraseña"}}</h2>
+        <h2>{{usuarioForm.get('estado')?.value == 1 ? 'Activo' : (usuarioForm.get('estado')?.value == 3) ? 'Inactivo' : 'Estado'}}</h2>
+        <h2>{{usuarioForm.get('rol')?.value | roles}}</h2>
+    </mat-card>
+</div>
+<div class="flex w-full pl-8 pr-8 mb-8">
+    <div class="w-full" *ngIf="grillaEmpresas.length > 0 && usuarioForm.get('rol')?.value != 1">
+        <table #table id="table" mat-table [dataSource]="grillaEmpresas" class="mat-elevation-z8 w-full mt-8">
+            <ng-container matColumnDef="empresa">
+              <th mat-header-cell *matHeaderCellDef> Empresa </th>
+              <td mat-cell *matCellDef="let element"> {{element.descripcion}} </td>
+            </ng-container>
+          
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef> Estado </th>
+              <td mat-cell *matCellDef="let element; let i = index">
+                <mat-select (selectionChange)="empresaChange(i, $event)" [value]="element.id_estado">
+                    <mat-option *ngFor="let estado of estados" [value]="estado.id">{{estado.descripcion}}</mat-option>
+                </mat-select>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="planta">
+                <th mat-header-cell *matHeaderCellDef> Planta </th>
+                <td mat-cell *matCellDef="let element">
+                    <div *ngIf="plantas[element.id].length == 0">No hay plantas asociadas a la empresa</div>
+                  <mat-select (selectionChange)="plantaChange(element, $event)" *ngIf="plantas[element.id].length > 0" [multiple]="true">
+                    <mat-option *ngFor="let planta of plantas[element.id]" [value]="planta.id_planta">{{planta.descripcion}}</mat-option>
+                  </mat-select>
+                </td>
+              </ng-container>
+          
+            <tr mat-header-row *matHeaderRowDef="['empresa', 'estado', 'planta']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['empresa', 'estado', 'planta'];"></tr>
+        </table>
+    </div>
+</div>

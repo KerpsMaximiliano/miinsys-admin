@@ -1,0 +1,109 @@
+
+
+<div class="flex flex-col flex-auto min-w-0" id="top">
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <div>
+            <mat-accordion>
+                <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" #expansionPanel>
+                    <mat-expansion-panel-header class="h-12" [style.background-color]="colours.backgroundColor">
+                        <mat-panel-title>
+                            <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate text-white">Búsqueda</span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <form [formGroup]="searchForm" class="mt-4">
+                        <div class="row flex gap-8 justify-around">
+                            <mat-form-field class="w-1/3">
+                                <mat-select [formControlName]="'empresa'" placeholder='Empresa'>
+                                    <mat-option *ngFor="let empresa of empresas" [value]="empresa.id">{{empresa.descripcion}}</mat-option>
+                                  </mat-select>
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <mat-label>Fecha Desde</mat-label>
+                                <input id="fechaDesde" matInput [matDatepicker]="picker" [formControlName]="'fechaDesde'">
+                                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <mat-label>Fecha Hasta</mat-label>
+                                <input id="fechaHasta" matInput [matDatepicker]="picker2" [formControlName]="'fechaHasta'">
+                                <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                                <mat-datepicker #picker2></mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                        <div class="row flex justify-end gap-4">
+                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" type="button" (click)="clean()" [style.background-color]="colours.warnButtonColor">
+                                <mat-icon>restart_alt</mat-icon>
+                                <span class="mat-button-wrapper">
+                                    Limpiar
+                                </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                <span class="mat-button-focus-overlay"></span>
+                            </button>
+                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="search()" [style.background-color]="colours.mainButtonColor">
+                                <mat-icon>search</mat-icon>
+                                <span class="mat-button-wrapper">
+                                    Buscar
+                                </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                <span class="mat-button-focus-overlay"></span>
+                            </button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+            </mat-accordion>
+            <div class="flex mt-8 flex-wrap gap-y-8">
+                <div class="w-1/2 flex flex-col grow">
+                    <h2 style="margin: 0 auto;">Formulario | Tipo de Respuesta</h2>
+                    <canvas baseChart style="margin: 0 auto;" id="Chart" [type]="'pie'" [datasets]="pieChartDatasetsTipo"
+                        [labels]="pieChartLabelsTipo" [options]="pieChartOptionsTipo" [plugins]="pieChartPluginsTipo"
+                        [legend]="pieChartLegendTipo" *ngIf="tipo">
+                    </canvas>
+                    <div *ngIf="!tipo" style="background-color: lightgray; margin: 2rem auto;" class="w-40 h-40 flex flex-col justify-center rounded-full">
+                        <h3 class="text-center pt-4">Sin datos</h3>
+                    </div>
+                </div>
+                <div class="w-1/2 flex flex-col grow">
+                    <h2 style="margin: 0 auto;">Formulario | Por Usuario</h2>
+                    <canvas baseChart style="margin: 0 auto;" id="Chart 2" [type]="'pie'" [datasets]="pieChartDatasetsUsuario"
+                        [labels]="pieChartLabelsUsuario" [options]="pieChartOptionsUsuario" [plugins]="pieChartPluginsUsuario"
+                        [legend]="pieChartLegendUsuario" *ngIf="usuarios">
+                    </canvas>
+                    <div *ngIf="!usuarios" style="background-color: lightgray; margin: 2rem auto;" class="w-40 h-40 flex flex-col justify-center rounded-full">
+                        <h3 class="text-center pt-4">Sin datos</h3>
+                    </div>
+                </div>
+                <div class="w-1/2 flex flex-col">
+                    <h2 style="margin: 0 auto;">Formulario | Por Planta</h2>
+                    <canvas baseChart style="margin: 0 auto;" id="Chart 3" [type]="'pie'" [datasets]="pieChartDatasetsPlanta"
+                        [labels]="pieChartLabelsPlanta" [options]="pieChartOptionsPlanta" [plugins]="pieChartPluginsPlanta"
+                        [legend]="pieChartLegendPlanta" *ngIf="planta">
+                    </canvas>
+                    <div *ngIf="!planta" style="background-color: lightgray; margin: 2rem auto;" class="w-40 h-40 flex flex-col justify-center rounded-full">
+                        <h3 class="text-center pt-4">Sin datos</h3>
+                    </div>
+                </div>
+                <div class="w-1/2 flex flex-col">
+                    <h2 style="margin: 0 auto;">Formulario | Por Grupo</h2>
+                    <canvas baseChart style="margin: 0 auto;" id="Chart 4" [type]="'pie'" [datasets]="pieChartDatasetsGrupo"
+                        [labels]="pieChartLabelsGrupo" [options]="pieChartOptionsGrupo" [plugins]="pieChartPluginsGrupo"
+                        [legend]="pieChartLegendGrupo" *ngIf="grupo">
+                    </canvas>
+                    <div *ngIf="!grupo" style="background-color: lightgray; margin: 2rem auto;" class="w-40 h-40 flex flex-col justify-center rounded-full">
+                        <h3 class="text-center pt-4">Sin datos</h3>
+                    </div>
+                </div>
+                <div class="w-1/2 flex flex-col">
+                    <h2 style="margin: 0 auto;">Formulario | Por Cuestionario</h2>
+                    <canvas baseChart style="margin: 0 auto;" id="Chart 5" [type]="'pie'" [datasets]="pieChartDatasetsCuestionario"
+                        [labels]="pieChartLabelsCuestionario" [options]="pieChartOptionsCuestionario"
+                        [plugins]="pieChartPluginsCuestionario" [legend]="pieChartLegendCuestionario" *ngIf="cuestionario">
+                    </canvas>
+                    <div *ngIf="!cuestionario" style="background-color: lightgray; margin: 2rem auto;" class="w-40 h-40 flex flex-col justify-center rounded-full">
+                        <h3 class="text-center pt-4">Sin datos</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

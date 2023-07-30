@@ -1,0 +1,86 @@
+<div class="flex w-full">
+    <div class="flex flex-col w-full pr-8 pl-8 mt-10 mb-4">
+        <form [formGroup]="accionForm">
+            <div class="row flex flex-row mb-4">
+                <mat-form-field class="w-1/2 pr-6">
+                    <mat-label>Empresa</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        work
+                    </mat-icon>
+                    <mat-select formControlName="empresa" (selectionChange)="empresaChange($event)">
+                        <mat-option *ngFor="let empresa of empresas" [value]="empresa.id">
+                            {{empresa.descripcion}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-1/2 pl-6">
+                    <mat-label>Cuestionario</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        description
+                    </mat-icon>
+                    <mat-select formControlName="cuestionario" (selectionChange)="cuestionarioChange($event)">
+                        <mat-option *ngFor="let cuestionario of cuestionarios" [value]="cuestionario.id_cuestionario">
+                            {{cuestionario.descripcion_cuestionario}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row mb-4">
+                <mat-form-field class="w-1/2 pr-6">
+                    <mat-label>Pregunta</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        quiz
+                    </mat-icon>
+                    <mat-select formControlName="pregunta">
+                        <mat-option *ngFor="let pregunta of preguntas" [value]="pregunta.pre_id">
+                            {{pregunta.pre_descripcion}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-1/2 pl-6">
+                    <mat-label>Estado</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        assignment_turned_in
+                    </mat-icon>
+                    <mat-select formControlName="estado">
+                        <mat-option *ngFor="let estado of estados" [value]="estado.id">
+                            {{estado.descripcion}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row mb-4">
+                <mat-form-field class="w-full">
+                    <mat-label>Nombre Acción</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        bolt
+                    </mat-icon>
+                    <input matInput [formControlName]="'accion'">
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row mb-4">
+                <mat-form-field class="w-full">
+                    <mat-label>Responsable</mat-label>
+                    <mat-icon mat-icon matPrefix class="mr-4">
+                        person
+                    </mat-icon>
+                    <input matInput [formControlName]="'responsable'">
+                </mat-form-field>
+            </div>
+            <div class="row flex flex-row justify-around mb-4">
+                <div class="w-1/2 pl-6 flex flex-col">
+                    <mat-checkbox color="primary" [formControlName]="'botonesAprobacion'" class="mb-4">Botones de estado de aprobación</mat-checkbox>
+                    <mat-checkbox color="primary" [formControlName]="'planCierre'">Añadir plan de cierre</mat-checkbox>
+                </div>
+                <div class="w-1/2 pl-6 flex flex-col">
+                    <mat-checkbox color="primary" [formControlName]="'adjuntos'" class="mb-4">Añadir adjuntos</mat-checkbox>
+                    <mat-checkbox color="primary" [formControlName]="'alertarCorreoObservaciones'">Alertar a correo con 3 aprobaciones con observaciones</mat-checkbox>
+                </div>
+                <div class="w-1/2 pl-6 flex flex-col">
+                    <mat-checkbox color="primary" [formControlName]="'asignarIncidencia'" class="mb-4">Asignar incidencia a usuario</mat-checkbox>
+                    <mat-checkbox color="primary" [formControlName]="'alertarCorreoSupervisor'">Alertar a correo de supervisor</mat-checkbox>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

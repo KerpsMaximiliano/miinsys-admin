@@ -1,0 +1,147 @@
+<div class="flex flex-col flex-auto min-w-0" id="top">
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <!-- CONTENT GOES HERE -->
+        <div>
+            <mat-accordion>
+                <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" #expansionPanel>
+                    <mat-expansion-panel-header class="h-12" [style.background-color]="colours.backgroundColor">
+                        <mat-panel-title>
+                            <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate text-white">Búsqueda</span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+                    <form [formGroup]="incidenciaSearchForm" class="mt-4">
+                        <div class="row flex gap-8 justify-around">
+                            <mat-form-field class="w-1/3">
+                                <mat-select placeholder='Empresa' [formControlName]="'id_empresa'" (selectionChange)="empresaChange($event)">
+                                    <mat-option *ngFor="let empresa of empresas" [value]="empresa.id">{{empresa.descripcion}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <mat-select placeholder='Cuestionario' [formControlName]="'id_cuestionario'">
+                                    <mat-option *ngFor="let cuestionario of cuestionarios" [value]="cuestionario.id_cuestionario">{{cuestionario.descripcion_cuestionario}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <input matInput [formControlName]="'descripcion'" placeholder="Nombre incidencia">
+                            </mat-form-field>
+                        </div>
+                        <div class="row flex gap-8 justify-around">
+                            <mat-form-field class="w-1/3">
+                                <input matInput [formControlName]="'rut_responsable'" type="number" placeholder="RUT Responsable">
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <input matInput [formControlName]="'rut_supervisor'" type="number" placeholder="RUT Supervisor">
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <mat-select placeholder='Estado' [formControlName]="'id_estado'">
+                                    <mat-option *ngFor="let estado of estados" [value]="estado.id">{{estado.descripcion}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                        <div class="row flex gap-8 justify-around">
+                            <mat-form-field class="w-1/3">
+                                <mat-label>Fecha Desde</mat-label>
+                                <input id="fecha_desde" matInput [matDatepicker]="picker" [formControlName]="'fecha_desde'">
+                                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                                <mat-datepicker #picker></mat-datepicker>
+                            </mat-form-field>
+                            <mat-form-field class="w-1/3">
+                                <mat-label>Fecha Hasta</mat-label>
+                                <input id="fecha_hasta" matInput [matDatepicker]="picker2" [formControlName]="'fecha_hasta'">
+                                <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+                                <mat-datepicker #picker2></mat-datepicker>
+                            </mat-form-field>
+                            <div class="w-1/3"></div>
+                        </div>
+                        <div class="row flex justify-end gap-4">
+                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" type="button" (click)="clean()" [style.background-color]="colours.warnButtonColor">
+                                <mat-icon>restart_alt</mat-icon>
+                                <span class="mat-button-wrapper">
+                                    Limpiar
+                                </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                <span class="mat-button-focus-overlay"></span>
+                            </button>
+                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="search()" [style.background-color]="colours.mainButtonColor">
+                                <mat-icon>search</mat-icon>
+                                <span class="mat-button-wrapper">
+                                    Buscar
+                                </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                <span class="mat-button-focus-overlay"></span>
+                            </button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+            </mat-accordion>
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 w-full mt-8" matSort>
+                <ng-container matColumnDef="descripcion_empresa">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Empresa </th>
+                    <td mat-cell *matCellDef="let element"> {{element.descripcion_empresa}} </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="descripcion_accion">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Incidencia </th>
+                    <td mat-cell *matCellDef="let element"> {{element.descripcion_accion}} </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="descripcion_cuestionario">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Cuestionario </th>
+                    <td mat-cell *matCellDef="let element"> {{element.descripcion_cuestionario}} </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="responsable">
+                    <th mat-header-cell *matHeaderCellDef> Responsable </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.incidenciaUsuarioAsignado.length == 1">{{element.incidenciaUsuarioAsignado[0].responsable.rut}} - {{element.incidenciaUsuarioAsignado[0].responsable.lastName}}, {{element.incidenciaUsuarioAsignado[0].responsable.firstName}}</div>
+                    </td>
+                  </ng-container>
+
+                <ng-container matColumnDef="supervisor">
+                    <th mat-header-cell *matHeaderCellDef> Supervisor </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div *ngIf="element.incidenciaUsuarioAsignado.length == 1">{{element.incidenciaUsuarioAsignado[0].supervisor.rut}} - {{element.incidenciaUsuarioAsignado[0].supervisor.lastName}}, {{element.incidenciaUsuarioAsignado[0].supervisor.firstName}}</div>
+                    </td>
+                  </ng-container>
+              
+                  <ng-container matColumnDef="dias_abierto">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Días desde apertura incidencia </th>
+                    <td mat-cell *matCellDef="let element"> {{element.dias_abierto}} </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="fecha_alta">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Fecha creación </th>
+                    <td mat-cell *matCellDef="let element"> {{element.fecha_alta | fechaRespuestaCuestionario}} </td>
+                  </ng-container>
+
+                <ng-container matColumnDef="descripcion_estado">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Estado </th>
+                    <td mat-cell *matCellDef="let element"> {{element.descripcion_estado}} </td>
+                  </ng-container>
+
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let row" class="text-right">
+                        <button *ngIf="row.id_file" (click)="downloadPDF(row.id_file)">
+                            <mat-icon matTooltip="PDF" [ngStyle]="{'color': colours.mainButtonColor}">picture_as_pdf</mat-icon>
+                        </button>
+                        <button *ngIf="row.accion.incluir_adjuntos == 1" (click)="downloadExtras(row.incidenciaAdjunto[0])" [disabled]="row.incidenciaAdjunto.length == 0">
+                            <mat-icon matTooltip="Adjuntar" [ngStyle]="{'color': (row.incidenciaAdjunto.length == 1) ? colours.mainButtonColor : colours.disabledColor}">attach_file</mat-icon>
+                        </button>
+                        <button *ngIf="row.accion.incluir_plan_cierre == 1" (click)="viewPlanCierre(row)" [disabled]="row.incidenciaPlanesCierre.length == 0">
+                            <mat-icon matTooltip="Plan Cierre" [ngStyle]="{'color': (row.incidenciaPlanesCierre.length == 1) ? colours.mainButtonColor : colours.disabledColor}">assignment</mat-icon>
+                        </button>
+                        <button *ngIf="row.accion.aprobar == 1 || row.accion.asignar_usuario == 1 || row.accion.incluir_adjuntos == 1 || row.accion.incluir_plan_cierre == 1" [disabled]="(row.id_estado == 3 || row.id_estado == 4 || row.id_estado == 5)" (click)="modifyAccion(row)">
+                            <mat-icon matTooltip="Modificar incidencia" [ngStyle]="{'color': (row.id_estado == 3 || row.id_estado == 4 || row.id_estado == 5) ? colours.disabledColor : colours.mainButtonColor}">bolt</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+              
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+            <mat-paginator [pageSizeOptions]="[10, 20, 50]" [pageSize]="10" showFirstLastButtons></mat-paginator>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,120 @@
+/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+$azulPrincipal: #0B057A;
+$violetaPrincipal: #A170EF;
+$cremaSecundario: #F9DBBD;
+$naranjaSecundario: #F2B111;
+$grisSecundario: #A4A5A4;
+
+
+* {
+  font-family: 'Ubuntu', sans-serif;
+  //font-family: 'Rubik', sans-serif;
+  //font-family: 'Signika Negative', sans-serif;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Ubuntu', sans-serif !important;
+}
+
+html {
+    box-sizing: border-box;
+  }
+  *, *:before, *:after {
+    box-sizing: inherit;
+  }
+html, body { height: 100%; }
+//body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { 
+  margin: 0; 
+  font-family: 'Ubuntu', sans-serif !important;
+}
+//body { margin: 0; font-family: ubuntu; }
+
+
+.error-snackbar {
+  background: #DC2626 !important;
+  color: white !important;
+}
+
+.error-snackbar button {
+  background-color: #DC2626 !important;
+  color: white !important;
+  border: none;
+}
+
+.success-snackbar {
+  background: #16A34A !important;
+  color: white !important;
+}
+
+.success-snackbar button {
+  background-color: 16A34A !important;
+  color: white !important;
+  border: none;
+}
+
+.warn-snackbar {
+  background: orange !important;
+  color: white !important;
+}
+
+.warn-snackbar button {
+  background-color: orange !important;
+  color: white !important;
+  border: none;
+}
+
+// .mat-accordion-example {
+//   .mat-expansion-indicator::before, .mat-expansion-indicator::after {
+//       color: black !important;
+//       border-color: black !important;
+//   }
+// }
+
+.sidenav-scrollbar .mat-drawer-inner-container::-webkit-scrollbar {
+  display: none !important;
+}
+
+.minimized {
+  .mat-expansion-panel-body {
+      padding: 0 !important;
+  }
+
+  .mat-expansion-panel-content {
+    background-color: $violetaPrincipal;
+  }
+
+  // .mat-list-item-content {
+  //     padding: 0 !important;
+  // }
+}
+
+.sidenav-menu {
+  .nav-item-color {
+    color: white !important;
+    mat-icon {
+      color: white !important;
+    }
+  }
+}
+
+  //  /* Track */
+  //  .sidenav-scrollbar .mat-drawer-inner-container::-webkit-scrollbar-track {
+  //   box-shadow: inset 0 0 5px grey !important; 
+  //   border-radius: 10px !important;
+  // }
+  
+  // /* Handle */
+  // .sidenav-scrollbar .mat-drawer-inner-container::-webkit-scrollbar-thumb {
+  //   background: red !important; 
+  //   border-radius: 10px !important;
+  // }
+  
+  // /* Handle on hover */
+  // .sidenav-scrollbar .mat-drawer-inner-container::-webkit-scrollbar-thumb:hover {
+  //   background: #b30000 !important; 
+  // }

@@ -1,0 +1,9 @@
+<h1 mat-dialog-title>¿Desea cambiar el estado a Inactiva?</h1>
+<div mat-dialog-content>
+  <p>Al inactivar una empresa se inactivarán
+    todos los cuestionarios y usuarios vinculados a ellos. Desea continuar ?</p>
+</div>
+<div mat-dialog-actions class="flex justify-end gap-4">
+  <button mat-button (click)="onNoClick()" [style.background-color]="colours.warnButtonColor" class="text-white">Cancelar</button>
+  <button mat-button cdkFocusInitial [style.background-color]="colours.mainButtonColor" class="text-white" (click)="confirm()">Confirmar</button>
+</div>

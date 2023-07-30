@@ -1,0 +1,113 @@
+<div class="flex flex-col w-full" *ngIf="show">
+    <div class="my-8 w-4/5 ml-auto mr-auto">
+        <form [formGroup]="cuestionarioDataForm" class="flex justify-between flex-col">
+            <div class="row w-full flex justify-around">
+                <mat-form-field class="w-1/3">
+                    <mat-label>Nombre cuestionario</mat-label>
+                    <input matInput [formControlName]="'descripcion_cuestionario'">
+                </mat-form-field>
+                <mat-form-field class="w-1/3">
+                    <mat-label>Empresa asociada</mat-label>
+                    <input matInput [formControlName]="'empresa'">
+                </mat-form-field>
+            </div>
+            <div class="row w-full flex justify-around">
+                <mat-form-field class="w-1/3">
+                    <mat-label>Estado</mat-label>
+                    <mat-select [formControlName]="'id_estado'">
+                        <mat-option *ngFor="let estado of estados" [value]="estado.id">{{estado.descripcion}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-1/3">
+                    <mat-label>Orden</mat-label>
+                    <input matInput [formControlName]="'orden'" type="number">
+                </mat-form-field>
+            </div>
+            <div class="row w-full flex justify-around">
+                <mat-form-field class="w-1/3">
+                    <mat-label>Planta</mat-label>
+                    <mat-select [formControlName]="'planta'">
+                        <mat-option *ngFor="let planta of plantas" [value]="planta.id_planta">{{planta.descripcion}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-1/3">
+                    <mat-label>Grupo cuestionario</mat-label>
+                    <mat-select [formControlName]="'grupo'" [value]="cuestionario.id_grupo">
+                        <mat-option *ngFor="let grupo of grupos" [value]="grupo.id_grupo">{{grupo.descripcion}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="row w-full flex justify-around">
+                <mat-checkbox color="primary" class="w-1/3" [formControlName]="'planificado'" (change)="checkboxChange()">Es planificado ?</mat-checkbox>
+                <div class="w-1/3"></div>
+            </div>
+        </form>
+    </div>
+    <div class="my-8 w-4/5 ml-auto mr-auto">
+        <form [formGroup]="seccionForm" class="flex justify-between">
+            <mat-form-field class="w-3/4">
+                <mat-label>Nueva sección</mat-label>
+                <input matInput [formControlName]="'nombre'">
+            </mat-form-field>
+            <div class="w-1/5 ml-4">
+                <button mat-button type="button" class="w-full text-white" [style.background-color]="colours.mainButtonColor" (click)="addSeccion()" [disabled]="rolUsuario == 3">Agregar sección</button>
+            </div>
+        </form>
+    </div>
+    <mat-accordion class="w-4/5 ml-auto mr-auto mb-4" *ngFor="let seccion of cuestionario.secciones; let indexSeccion = index">
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Sección {{indexSeccion + 1}} - {{seccion.sec_descripcion}}
+                </mat-panel-title>
+                <button class="mr-8" *ngIf="rolUsuario != 3 && seccion.orden != 0 && seccion.orden != 999">
+                    <mat-icon matTooltip="Editar Sección" (click)="editSeccion($event, seccion)">edit</mat-icon>
+                </button>
+            </mat-expansion-panel-header>
+            <table mat-table [dataSource]="seccion.preguntas" class="w-full" *ngIf="seccion.preguntas.length > 0" cdkDropList [cdkDropListData]="seccion.preguntas" (cdkDropListDropped)="dropTable($event, indexSeccion)">
+                <ng-container matColumnDef="orden">
+                    <th mat-header-cell *matHeaderCellDef> Orden </th>
+                    <td mat-cell *matCellDef="let element; let i = index"> {{i + 1}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="descripcion">
+                    <th mat-header-cell *matHeaderCellDef> Enunciado Pregunta </th>
+                    <td mat-cell *matCellDef="let element"> {{element.pre_descripcion}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="tipo">
+                    <th mat-header-cell *matHeaderCellDef> Tipo de Pregunta </th>
+                    <td mat-cell *matCellDef="let element"> {{element.tpr_id | tipoPregunta}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef>
+                        <button mat-button [style.background-color]="colours.mainButtonColor" class="w-full text-white" (click)="addQuestion(seccion)" [disabled]="rolUsuario == 3" *ngIf="seccion.orden != 999">Agregar Pregunta</button>
+                        <button mat-button [style.background-color]="colours.mainButtonColor" class="w-full text-white" (click)="addFirma(seccion)" [disabled]="rolUsuario == 3" *ngIf="seccion.orden == 999">Agregar Firma</button>
+                    </th>
+                    <td mat-cell *matCellDef="let row; let index = index" class="text-right">
+                        <button class="ml-2">
+                            <mat-icon [matTooltip]="rolUsuario == 3 ? 'Ver' : 'Editar'" (click)="editQuestion(row, indexSeccion, index)">{{rolUsuario == 3 ? 'visibility' : 'edit'}}</mat-icon>
+                        </button>
+                        <button class="ml-2" *ngIf="rolUsuario != 3">
+                            <mat-icon matTooltip="Eliminar" (click)="deleteQuestion(row)">delete</mat-icon>
+                        </button>
+                        <button class="ml-2" *ngIf="rolUsuario != 3 && row.tpr_id != 16">
+                            <mat-icon matTooltip="Duplicar pregunta" (click)="copyPregunta(indexSeccion, index, row)">content_copy</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"></tr>
+            </table>
+            <div *ngIf="seccion.preguntas.length == 0" class="w-full flex justify-around">
+                <button mat-button [style.background-color]="colours.mainButtonColor" class="w-1/3 text-white" (click)="addQuestion(seccion)" [disabled]="rolUsuario == 3" *ngIf="seccion.orden != 999">Agregar Pregunta</button>
+                <button mat-button [style.background-color]="colours.mainButtonColor" class="w-1/3 text-white" (click)="addFirma(seccion)" [disabled]="rolUsuario == 3" *ngIf="seccion.orden == 999">Agregar Firma</button>
+            </div>
+        </mat-expansion-panel>
+    </mat-accordion>
+</div>
+<div *ngIf="!show" class="w-full h-[calc(100vh-5rem)] justify-around flex">
+    <mat-spinner class="mb-auto mt-auto"></mat-spinner>
+</div>

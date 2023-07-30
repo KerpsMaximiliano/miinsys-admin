@@ -1,0 +1,69 @@
+<div class="flex w-full">
+    <div class="flex flex-col w-2/3 pr-8 pl-8 mt-20 mb-14">
+        <form [formGroup]="cuestionarioForm">
+            <mat-form-field class="w-full">
+                <mat-label>Nombre del cuestionario</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    description
+                </mat-icon>
+                <input matInput type="text" name="nombre" formControlName="nombre">
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Empresa asociada</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    work
+                </mat-icon>
+                <mat-select formControlName="empresa" (selectionChange)="empresaChange($event)">
+                    <mat-option *ngFor="let empresa of empresas" [value]="empresa.id">
+                      {{empresa.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Planta</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    factory
+                </mat-icon>
+                <mat-select formControlName="planta">
+                    <mat-option *ngFor="let planta of plantas" [value]="planta.id_planta">
+                      {{planta.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Grupo cuestionario</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    groups
+                </mat-icon>
+                <mat-select formControlName="grupo">
+                    <mat-option *ngFor="let grupo of grupos" [value]="grupo.id_grupo">
+                      {{grupo.descripcion}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Estado</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    assignment_turned_in
+                </mat-icon>
+                <mat-select formControlName="estado">
+                    <mat-option *ngFor="let estado of estados" [value]="estado.id">{{estado.descripcion}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full mt-8">
+                <mat-label>Orden</mat-label>
+                <mat-icon mat-icon matPrefix class="mr-4">
+                    list
+                </mat-icon>
+                <input matInput [formControlName]="'orden'" type="number">
+            </mat-form-field>
+            <mat-checkbox color="primary" [formControlName]="'planificado'">Es planificado ?</mat-checkbox>
+        </form>
+    </div>
+    <mat-card class="w-1/3 mr-4 pl-4 text-center mt-8 mb-1 max-h-80" [style.background-color]="colours.secondaryBackgroundColor">
+        <mat-icon class="text-center w-full mr-16 mt-8" style="font-size: 6rem;">list_alt</mat-icon>
+        <h2 class="pt-4">{{cuestionarioForm.get('nombre')?.value || "Nombre del cuestionario"}}</h2>
+        <h2>{{cuestionarioForm.get('empresa')?.value || "Empresa asociada"}}</h2>
+        <h2>{{cuestionarioForm.get('estado')?.value == 1 ? 'Activo' : (cuestionarioForm.get('estado')?.value == 3) ? 'Inactivo' : 'Estado'}}</h2>
+    </mat-card>
+</div>
