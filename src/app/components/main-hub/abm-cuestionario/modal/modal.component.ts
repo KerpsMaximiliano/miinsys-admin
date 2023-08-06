@@ -669,7 +669,7 @@ export class AbmCuestionarioModalComponent implements OnInit {
             descripcion: opcDescripcion,
             id_pregunta: idPregunta,
             id_estado: 1,
-            valor: opc.valor,
+            valor: opc.opc_valor,
             orden: i,
           });
         });
