@@ -1,113 +1,89 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
-import { MatExpansionPanel } from '@angular/material/expansion';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Estado } from 'src/app/models/abm';
+import { Router } from '@angular/router';
+
+// * Services.
 import { FilesService } from 'src/app/services/files.service';
 import { LoginService } from 'src/app/services/login.service';
 import { StylesService } from 'src/app/services/styles.service';
 import { AbmEmpresaService } from '../../abm-empresa/abm-empresa.service';
-import { AbmUsuarioService } from '../../abm-usuario/abm-usuario.service';
 import { ButtonsEventService } from '../../buttons-event.service';
 import { AbmActividadService } from '../abm-actividad/abm-actividad.service';
 import { PlanificacionService } from './planificacion.service';
 
+// * Forms.
+import { FormGroup, FormControl } from '@angular/forms';
+
+// * Material.
+import { MatExpansionPanel } from '@angular/material/expansion';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+
+// * Interfaces.
+import { PlanificacionParams } from 'src/app/models/abm';
+
 @Component({
   selector: 'app-planificacion',
   templateUrl: './planificacion.component.html',
-  styleUrls: ['./planificacion.component.scss']
+  styleUrls: ['./planificacion.component.scss'],
 })
 export class PlanificacionComponent implements OnInit {
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatExpansionPanel, {static: true}) expansionPanel!: MatExpansionPanel;
-  @ViewChild(MatSort) sort!: MatSort;
-
-  titulo: string = "Planificación";
-  seccion: string = "Planificación";
-
-  estados = [] as Array<any>;
-  estadosBackup = [] as Array<any>; 
-  empresas = [] as Array<{descripcion: string; id: number}>;
-
-  panelOpenState: boolean = false;
-
-  searchForm: FormGroup = new FormGroup({
-    descripcion_actividad: new FormControl(null),
-    id_empresa: new FormControl(null),
-    rut_supervisor: new FormControl(null),
-    rut_lider: new FormControl(null),
-    fecha_planificada: new FormControl(null),
-    fecha_realizada: new FormControl(null),
-    id_actividad_estado: new FormControl(null)
-  });
-
-  displayedColumns = ['descripcion_actividad', 'descripcion_empresa', 'descripcion_cuestionario', 'rut_supervisor', 'rut_lider', 'descripcion_actividad_estado', 'fecha_planificada', 'fecha_realizada', 'info_gps', 'acciones'];
-  dataSource = new MatTableDataSource<any>([]);
-  data = [] as Array<any>;
-
   suscripcion: Subscription;
 
-  rolUsuario: number = 0;
-  empresaUsuario = {} as any;
+  private rol: number = 0;
+  private empresa: any;
+  private data = [] as Array<any>;
+
+  public formGroup!: FormGroup;
+  public empresas$ = [] as Array<{ descripcion: string; id: number }>;
+  public estados$ = [] as Array<any>;
+  public panelOpenState: boolean = false;
+
+  public displayedColumns = [
+    'descripcion_actividad',
+    'descripcion_empresa',
+    'descripcion_cuestionario',
+    'rut_supervisor',
+    'rut_lider',
+    'descripcion_actividad_estado',
+    'fecha_planificada',
+    'fecha_realizada',
+    'info_gps',
+    'acciones',
+  ];
+  public dataSource = new MatTableDataSource<any>([]);
+
+  @ViewChild(MatPaginator) public paginator!: MatPaginator;
+  @ViewChild(MatExpansionPanel, { static: true })
+  public expansionPanel!: MatExpansionPanel;
+  @ViewChild(MatSort) public sort!: MatSort;
 
   constructor(
-    private stylesService: StylesService,
-    private router: Router,
-    private buttonsEventService: ButtonsEventService,
-    private abmUsuarioService: AbmUsuarioService,
-    private empresasService: AbmEmpresaService,
-    private loginService: LoginService,
-    private actividadService: AbmActividadService,
-    private fileService: FilesService,
-    private planificacionService: PlanificacionService
+    private _empresas: AbmEmpresaService,
+    private _login: LoginService,
+    private _actividad: AbmActividadService,
+    private _file: FilesService,
+    private _planificacion: PlanificacionService,
+    private _styles: StylesService,
+    private _router: Router,
+    private _buttonsEvent: ButtonsEventService
   ) {
-    this.suscripcion = this.buttonsEventService.events.subscribe(
-      (data: any) => {
-        this.create()
-      }
-    )
-  }
-
-  addHoursToDate(date: Date, hours: number): Date {
-    return new Date(new Date(date).setHours(date.getHours() + hours));
+    this.suscripcion = this._buttonsEvent.events.subscribe((data: any) =>
+      this.create()
+    );
+    this.setForm();
   }
 
   ngOnInit(): void {
-    this.rolUsuario = Number(this.loginService.getRol());
-    this.empresaUsuario = JSON.parse(this.loginService.getEmpresa()!);
-    let currentDate = new Date();
-    currentDate = this.addHoursToDate(currentDate, -3);
-    if(this.rolUsuario > 1) {
-      this.empresasService.getEmpresas({id: this.empresaUsuario.id}).subscribe(d => {
-        this.empresas = d;
-      });
-      this.planificacionService.getPlanificacionesByParams({fecha_planificada: currentDate, id_empresa: this.empresaUsuario.id}).subscribe(d => {
-        console.log(d);
-        this.data = d;
-        this.filtrar();
-      });
-    } else {
-      this.empresasService.getEmpresas(null).subscribe(d => {
-        this.empresas = d;
-      });
-      this.planificacionService.getPlanificacionesByParams({fecha_planificada: currentDate}).subscribe(d => {
-        console.log(d);
-        this.data = d;
-        this.filtrar();
-      });
-    };
-    
-    this.actividadService.getEstadosActividad().subscribe(d => {
-      this.estadosBackup = d;
-      this.estados = d;
-      //this.searchForm.get('id_actividad_estado')?.disable();
-      console.log(d)
-    });
+    let empresa: string | null = this._login.getEmpresa();
+    if (empresa !== null) this.empresa = JSON.parse(empresa);
+
+    let rol: string | null = this._login.getRol();
+    if (rol !== null) this.rol = Number(this._login.getRol());
+
+    this.getData();
+
     this.expansionPanel.open();
   }
 
@@ -115,76 +91,137 @@ export class PlanificacionComponent implements OnInit {
     this.suscripcion.unsubscribe();
   }
 
-  empresaChange(id: number) {
-    // this.estados = this.estadosBackup.filter(es => es.id_empresa == id);
-    // this.searchForm.get('id_actividad_estado')?.enable();
-  }
-
-  clean() {
-    this.searchForm.reset();
-  }
-
-  search() {
-    let params = this.searchForm.getRawValue();
-    Object.keys(params).forEach(key => {
-      if(params[key] == null || (typeof params[key] == 'string' && params[key] == '')) {
-        delete params[key]
-      }
+  public search(): void {
+    let params = this.formGroup.getRawValue();
+    Object.keys(params).forEach((key) => {
+      if (
+        params[key] == null ||
+        (typeof params[key] == 'string' && params[key] == '')
+      )
+        delete params[key];
     });
-    console.log(params);
-    this.planificacionService.getPlanificacionesByParams(params).subscribe(d => {
-      console.log(d);
-      this.data = d;
-      this.filtrar();
-    })
+
+    this._planificacion
+      .getPlanificacionesByParams(params)
+      .subscribe((res: any) => {
+        this.data = res;
+        this.loadTable();
+      });
   }
 
-  open(row: any) {
-    this.actividadService.setMode("View");
-    this.router.navigate(['dashboard/actividad/' + row.id_actividad]);
+  public clean(): void {
+    this.formGroup.reset();
   }
 
-  edit(row: any) {
-    this.actividadService.setMode("Edit");
-    this.router.navigate(['dashboard/actividad/' + row.id_actividad]);
+  public get colours(): any {
+    return this._styles.getStyle();
   }
 
-  create() {
-    this.router.navigate(['dashboard/actividad/nuevo']);
+  public open(row: any): void {
+    this._actividad.setMode('View');
+    this._router.navigate(['dashboard/actividad/' + row.id_actividad]);
   }
 
-  filtrar() {
-    this.loadTable(this.data);
+  public edit(row: any): void {
+    this._actividad.setMode('Edit');
+    this._router.navigate(['dashboard/actividad/' + row.id_actividad]);
   }
 
-  loadTable(data: any) {
-    this.dataSource = new MatTableDataSource<any>(data);
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-    this.sort.sort({
-      id: 'defColumnName',
-      start: '',
-      disableClear: true
-    });
-    this.sort.disableClear = true;
+  public create(): void {
+    this._router.navigate(['dashboard/actividad/nuevo']);
   }
 
-  downloadPDF(idPdf: number) {
-    this.fileService.traerArchivo(idPdf, 4).subscribe(d => {
-      var file = this.fileService.b64toBlob(d.file, 'application/pdf');
+  public downloadPDF(id: number): void {
+    this._file.traerArchivo(id, 4).subscribe((d) => {
+      var file = this._file.b64toBlob(d.file, 'application/pdf');
       var fileURL = URL.createObjectURL(file);
-      //window.open(fileURL);
       var a = document.createElement('a');
       a.href = fileURL;
       a.target = '_blank';
       a.download = d.fileName;
       document.body.appendChild(a);
       a.click();
-    })
+    });
   }
 
-  get colours() {
-    return this.stylesService.getStyle()
+  private getData(): void {
+    let currentDate: Date = this.addHoursToDate(new Date(), -3);
+
+    if (this.rol > 1) {
+      this.getEmpresas(this.empresa.id);
+      this.getPlanificaciones(currentDate, this.empresa.id);
+    } else {
+      this.getEmpresas();
+      this.getPlanificaciones(currentDate);
+    }
+
+    this.getActividad();
   }
 
+  private getEmpresas(id?: number): void {
+    let params: { id: number } | null = null;
+
+    if (id) params = { id: id };
+
+    this._empresas.getEmpresas(params).subscribe((res: any) => {
+      this.empresas$ = res;
+      this.setEmpresa();
+    });
+  }
+
+  private getPlanificaciones(date: Date, id?: number): void {
+    let params: PlanificacionParams = { fecha_planificada: date };
+
+    if (id) params = { fecha_planificada: date, id_empresa: id };
+
+    this._planificacion
+      .getPlanificacionesByParams(params)
+      .subscribe((res: any) => {
+        this.data = res;
+        this.loadTable();
+      });
+  }
+
+  private getActividad(): void {
+    this._actividad
+      .getEstadosActividad()
+      .subscribe((res: any) => (this.estados$ = res));
+  }
+
+  private loadTable(): void {
+    this.dataSource = new MatTableDataSource<any>(this.data);
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.sort.sort({
+      id: 'defColumnName',
+      start: '',
+      disableClear: true,
+    });
+    this.sort.disableClear = true;
+  }
+
+  private addHoursToDate(date: Date, hours: number): Date {
+    return new Date(new Date(date).setHours(date.getHours() + hours));
+  }
+
+  private setForm(): void {
+    this.formGroup = new FormGroup({
+      descripcion_actividad: new FormControl(),
+      id_empresa: new FormControl(),
+      rut_supervisor: new FormControl(),
+      rut_lider: new FormControl(),
+      fecha_planificada: new FormControl(),
+      fecha_realizada: new FormControl(),
+      id_actividad_estado: new FormControl(),
+    });
+  }
+
+  private setEmpresa(): void {
+    if (this.empresas$) {
+      if (this.empresas$.length === 1) {
+        this.formGroup.get('id_empresa')?.setValue(this.empresa.id);
+        this.formGroup.get('id_empresa')?.disable();
+      }
+    }
+  }
 }
