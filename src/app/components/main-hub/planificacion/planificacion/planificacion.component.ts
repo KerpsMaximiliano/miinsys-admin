@@ -59,6 +59,11 @@ export class PlanificacionComponent implements OnInit {
   public expansionPanel!: MatExpansionPanel;
   @ViewChild(MatSort) public sort!: MatSort;
 
+  // Breadcrumb.
+  public titulo: string = 'Planificación';
+  public seccion: string = 'Planificación';
+  public boton: string = '';
+
   constructor(
     private _empresas: AbmEmpresaService,
     private _login: LoginService,
