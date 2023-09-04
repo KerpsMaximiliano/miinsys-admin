@@ -1,127 +1,168 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { MatExpansionPanel } from '@angular/material/expansion';
-import { ChartOptions } from 'chart.js';
-import { StylesService } from 'src/app/services/styles.service';
+
+// * Services.
 import { AbmEmpresaService } from '../../abm-empresa/abm-empresa.service';
 import { DashboardService } from '../dashboard.service';
 import { LoginService } from 'src/app/services/login.service';
+import { StylesService } from 'src/app/services/styles.service';
+
+// * Forms.
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+
+// * Material.
+import { MatExpansionPanel } from '@angular/material/expansion';
+
+// * Chart.
+import { ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-gestion',
   templateUrl: './gestion.component.html',
-  styleUrls: ['./gestion.component.scss']
+  styleUrls: ['./gestion.component.scss'],
 })
 export class GestionComponent implements OnInit {
+  private rol: number = 0;
+  private empresa = {} as any;
 
-  @ViewChild(MatExpansionPanel, {static: true}) expansionPanel!: MatExpansionPanel;
+  public titulo: string = 'Gestion';
+  public seccion: string = 'Estadísticas';
 
-  titulo: string = "Gestion";
-  seccion: string = "Estadísticas";
+  public panelOpenState: boolean = false;
+  public form!: FormGroup;
+  public empresas$ = [] as Array<{ descripcion: string; id: number }>;
+  public showGraph: boolean = false;
 
   //Chart
   public pieChartOptionsIncidenciasPorEstado: ChartOptions<'pie'> = {
     responsive: false,
   };
-  public pieChartLabelsIncidenciasPorEstado = [ 'Respuestas A', 'Respuestas B', 'Respuestas C' ];
-  public pieChartDatasetsIncidenciasPorEstado = [ {
-    data: [ 300, 500, 100 ],
-    backgroundColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
-    hoverBackgroundColor: ['#03003a', '#583b87', '#9f846a', '#936e0f', '#606060'],
-    borderColor: ['white', 'white', 'white', 'white', 'white'],
-    hoverBorderColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
-  } ];
+  public pieChartLabelsIncidenciasPorEstado = [
+    'Respuestas A',
+    'Respuestas B',
+    'Respuestas C',
+  ];
+  public pieChartDatasetsIncidenciasPorEstado = [
+    {
+      data: [300, 500, 100],
+      backgroundColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
+      hoverBackgroundColor: [
+        '#03003a',
+        '#583b87',
+        '#9f846a',
+        '#936e0f',
+        '#606060',
+      ],
+      borderColor: ['white', 'white', 'white', 'white', 'white'],
+      hoverBorderColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
+    },
+  ];
   public pieChartLegendIncidenciasPorEstado = true;
   public pieChartPluginsIncidenciasPorEstado = [];
 
-  /////////////
-  searchForm: FormGroup = new FormGroup({
-    empresa: new FormControl(null),
-    fechaDesde: new FormControl(null),
-    fechaHasta: new FormControl(null)
-  });
-
-  panelOpenState: boolean = false;
-  empresas = [] as Array<{descripcion: string; id: number}>;
-  showGraph: boolean = false;
-
-  rolUsuario: number = 0;
-  empresaUsuario = {} as any;
+  @ViewChild(MatExpansionPanel, { static: true })
+  public expansionPanel!: MatExpansionPanel;
 
   constructor(
-    private stylesService: StylesService,
-    private dashboardService: DashboardService,
-    private empresasService: AbmEmpresaService,
-    private loginService: LoginService
-  ) { }
+    private _styles: StylesService,
+    private _dashboard: DashboardService,
+    private _empresas: AbmEmpresaService,
+    private _login: LoginService
+  ) {
+    this.setForm();
+  }
 
   ngOnInit(): void {
-    this.rolUsuario = Number(this.loginService.getRol());
-    this.empresaUsuario = JSON.parse(this.loginService.getEmpresa()!);
-    if(this.rolUsuario > 1) {
-      this.empresasService.getEmpresas({id: this.empresaUsuario.id}).subscribe(d => {
-        this.empresas = d;
-        this.filtrar();
-      });
-    } else {
-      this.empresasService.getEmpresas(null).subscribe(d => {
-        this.empresas = d;
-        this.filtrar();
-      });
-    };
+    let empresa: string | null = this._login.getEmpresa();
+    if (empresa !== null) this.empresa = JSON.parse(empresa);
+
+    let rol: string | null = this._login.getRol();
+    if (rol !== null) this.rol = Number(this._login.getRol());
+
+    this.rol > 1
+      ? this.getEmpresa({ id: this.empresa.id })
+      : this.getEmpresa(null);
+
     this.expansionPanel.open();
   }
 
-  clean() {
-    this.searchForm.reset();
+  public get colours(): any {
+    return this._styles.getStyle();
   }
 
-  search() {
-    this.searchForm.markAllAsTouched();
-    if(this.searchForm.invalid) {
+  public clean(): void {
+    this.form.reset();
+    this.setEmpresa();
+  }
+
+  public search(): void {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
       return;
-    };
-    let fechaDesde = this.searchForm.get('fechaDesde')?.value;
-    let fechaHasta = this.searchForm.get('fechaHasta')?.value;
-    let empresaId = this.searchForm.get('empresa')?.value;
-    this.dashboardService.getIncidenciasPorEstado(empresaId, fechaDesde, fechaHasta).subscribe(d => {
-      //Incidencias Por Estado
-      if(d.length == 0) {
-        this.showGraph = false;
-      } else {
-        this.showGraph = true;
-        this.loadGraph(d);
-      }
-    });
+    }
+
+    let fechaDesde = this.form.get('fecha_desde')?.value;
+    let fechaHasta = this.form.get('fecha_hasta')?.value;
+    let empresaId = this.form.get('id_empresa')?.value;
+
+    this._dashboard
+      .getIncidenciasPorEstado(empresaId, fechaDesde, fechaHasta)
+      .subscribe((res: any) => {
+        if (res.length == 0) {
+          this.showGraph = false;
+        } else {
+          this.showGraph = true;
+          this.loadGraph(res);
+        }
+      });
   }
 
-  loadGraph(data: any) {
+  private loadGraph(data: any): void {
     let labels = [] as Array<string>;
     let finalData = [] as Array<number>;
-    data.forEach((d: { descripcion: string; cantidad: number; }) => {
+    data.forEach((d: { descripcion: string; cantidad: number }) => {
       labels.push(d.descripcion);
-      finalData.push(d.cantidad)
+      finalData.push(d.cantidad);
     });
     this.pieChartLabelsIncidenciasPorEstado = labels;
     this.pieChartDatasetsIncidenciasPorEstado[0].data = finalData;
   }
 
-  filtrar() {
-    if(this.rolUsuario > 1) {
-      this.empresas = this.empresas.filter(emp => emp.id == this.empresaUsuario.id);
-      function addHoursToDate(date: Date, hours: number): Date {
-        return new Date(new Date(date).setHours(date.getHours() + hours));
-      };
+  private filtrar(): void {
+    if (this.rol > 1) {
+      this.empresas$ = this.empresas$.filter(
+        (emp) => emp.id == this.empresa.id
+      );
+
       let date = new Date();
-      this.searchForm.get('fechaDesde')?.setValue(date);
-      this.searchForm.get('fechaHasta')?.setValue(date);
-      this.searchForm.get('empresa')?.setValue(this.empresaUsuario.id);
+      this.form.get('fecha_desde')?.setValue(date);
+      this.form.get('fecha_hasta')?.setValue(date);
+      this.form.get('id_empresa')?.setValue(this.empresa.id);
       this.search();
+      this.setEmpresa();
     }
   }
 
-  get colours() {
-    return this.stylesService.getStyle()
+  private getEmpresa(id: { id: number } | null): void {
+    this._empresas.getEmpresas(id).subscribe((res: any) => {
+      this.empresas$ = res;
+      this.filtrar();
+    });
   }
 
+  private setForm(): void {
+    this.form = new FormGroup({
+      id_empresa: new FormControl(null, Validators.required),
+      fecha_desde: new FormControl(null),
+      fecha_hasta: new FormControl(null),
+    });
+  }
+
+  private setEmpresa(): void {
+    if (this.empresas$) {
+      if (this.empresas$.length === 1) {
+        this.form.get('id_empresa')?.setValue(this.empresa.id);
+        this.form.get('id_empresa')?.disable();
+      }
+    }
+  }
 }

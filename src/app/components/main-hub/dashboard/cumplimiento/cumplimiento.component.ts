@@ -10,106 +10,153 @@ import { DashboardService } from '../dashboard.service';
 @Component({
   selector: 'app-cumplimiento',
   templateUrl: './cumplimiento.component.html',
-  styleUrls: ['./cumplimiento.component.scss']
+  styleUrls: ['./cumplimiento.component.scss'],
 })
 export class CumplimientoComponent implements OnInit {
+  private rol: number = 0;
+  private empresa = {} as any;
 
-  @ViewChild(MatExpansionPanel, {static: true}) expansionPanel!: MatExpansionPanel;
+  public titulo: string = 'Cumplimiento';
+  public seccion: string = 'Estadísticas';
 
-  titulo: string = "Cumplimiento";
-  seccion: string = "Estadísticas";
-
+  public form!: FormGroup;
+  public panelOpenState: boolean = false;
+  public empresas$ = [] as Array<{ descripcion: string; id: number }>;
+  public showGraph: boolean = false;
 
   //Chart
   public pieChartOptionsPlanificadasVsRealizadas: ChartOptions<'pie'> = {
     responsive: false,
   };
-  public pieChartLabelsPlanificadasVsRealizadas = [ 'Respuestas A', 'Respuestas B', 'Respuestas C' ];
-  public pieChartDatasetsPlanificadasVsRealizadas = [ {
-    data: [ 300, 500, 100 ],
-    backgroundColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
-    hoverBackgroundColor: ['#03003a', '#583b87', '#9f846a', '#936e0f', '#606060'],
-    borderColor: ['white', 'white', 'white', 'white', 'white'],
-    hoverBorderColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
-  } ];
+  public pieChartLabelsPlanificadasVsRealizadas = [
+    'Respuestas A',
+    'Respuestas B',
+    'Respuestas C',
+  ];
+  public pieChartDatasetsPlanificadasVsRealizadas = [
+    {
+      data: [300, 500, 100],
+      backgroundColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
+      hoverBackgroundColor: [
+        '#03003a',
+        '#583b87',
+        '#9f846a',
+        '#936e0f',
+        '#606060',
+      ],
+      borderColor: ['white', 'white', 'white', 'white', 'white'],
+      hoverBorderColor: ['#0B057A', '#A170EF', '#F9DBBD', '#F2B111', '#A4A5A4'],
+    },
+  ];
   public pieChartLegendPlanificadasVsRealizadas = true;
   public pieChartPluginsPlanificadasVsRealizadas = [];
 
-
-  /////////////
-  searchForm: FormGroup = new FormGroup({
-    empresa: new FormControl(null, Validators.required),
-    fechaDesde: new FormControl(null),
-    fechaHasta: new FormControl(null)
-  });
-
-  panelOpenState: boolean = false;
-  empresas = [] as Array<{descripcion: string; id: number}>;
-  showGraph: boolean = false;
-
-  rolUsuario: number = 0;
-  empresaUsuario = {} as any;
+  @ViewChild(MatExpansionPanel, { static: true })
+  public expansionPanel!: MatExpansionPanel;
 
   constructor(
-    private stylesService: StylesService,
-    private dashboardService: DashboardService,
-    private empresasService: AbmEmpresaService,
-    private loginService: LoginService
-  ) { }
+    private _dashboard: DashboardService,
+    private _empresas: AbmEmpresaService,
+    private _login: LoginService,
+    private _styles: StylesService
+  ) {
+    this.setForm();
+  }
 
   ngOnInit(): void {
-    this.rolUsuario = Number(this.loginService.getRol());
-    this.empresaUsuario = JSON.parse(this.loginService.getEmpresa()!);
-    this.empresasService.getEmpresas(null).subscribe(d => {
-      this.empresas = d;
-      console.log(d);
-      this.filtrar();
-    });
+    let empresa: string | null = this._login.getEmpresa();
+    if (empresa !== null) this.empresa = JSON.parse(empresa);
+
+    let rol: string | null = this._login.getRol();
+    if (rol !== null) this.rol = Number(this._login.getRol());
+
+    this.rol > 1 ? this.getEmpresa({ id: this.empresa.id }) : this.getEmpresa();
+
     this.expansionPanel.open();
   }
 
-  clean() {
-    this.searchForm.reset();
+  public get colours(): any {
+    return this._styles.getStyle();
   }
 
-  search() {
-    this.searchForm.markAllAsTouched();
-    if(this.searchForm.invalid) {
+  public clean(): void {
+    this.form.reset();
+  }
+
+  public search(): void {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
       return;
-    };
-    let fechaDesde = this.searchForm.get('fechaDesde')?.value;
-    let fechaHasta = this.searchForm.get('fechaHasta')?.value;
-    let empresaId = this.searchForm.get('empresa')?.value;
-    this.dashboardService.getPlanificadasRealizadas(empresaId, fechaDesde, fechaHasta).subscribe(d => {
-      //Planificadas Vs Realizadas
-      this.showGraph = true;
-      this.loadGraph(d);
-    });
+    }
+
+    let empresaId = this.form.get('id_empresa')?.value;
+    let fechaDesde = this.form.get('fechaDesde')?.value;
+    let fechaHasta = this.form.get('fechaHasta')?.value;
+
+    this._dashboard
+      .getPlanificadasRealizadas(empresaId, fechaDesde, fechaHasta)
+      .subscribe((res: any) => {
+        this.loadGraph(res);
+      });
   }
 
-  loadGraph(data: any) {
-    let labels = [] as Array<string>;
-    let finalData = [] as Array<number>;
-    this.pieChartLabelsPlanificadasVsRealizadas = ['Planificadas', 'Realizadas'];
-    this.pieChartDatasetsPlanificadasVsRealizadas[0].data = [data.cantidad_planificaciones, data.cantidad_realizadas];
+  private loadGraph(data: any): void {
+    if (data.cantidad_planificaciones === 0 && data.cantidad_realizadas === 0) {
+      return;
+      this.showGraph = false;
+    }
+
+    this.pieChartLabelsPlanificadasVsRealizadas = [
+      'Planificadas',
+      'Realizadas',
+    ];
+
+    this.pieChartDatasetsPlanificadasVsRealizadas[0].data = [
+      data.cantidad_planificaciones,
+      data.cantidad_realizadas,
+    ];
+
+    this.showGraph = true;
   }
 
-  filtrar() {
-    if(this.rolUsuario > 1) {
-      this.empresas = this.empresas.filter(emp => emp.id == this.empresaUsuario.id);
-      function addHoursToDate(date: Date, hours: number): Date {
-        return new Date(new Date(date).setHours(date.getHours() + hours));
-      };
+  private filtrar(): void {
+    if (this.rol > 1) {
+      this.empresas$ = this.empresas$.filter(
+        (emp) => emp.id == this.empresa.id
+      );
+
       let date = new Date();
-      this.searchForm.get('fechaDesde')?.setValue(date);
-      this.searchForm.get('fechaHasta')?.setValue(date);
-      this.searchForm.get('empresa')?.setValue(this.empresaUsuario.id);
+      this.form.get('id_empresa')?.setValue(this.empresa.id);
+      this.form.get('fecha_desde')?.setValue(date);
+      this.form.get('fecha_hasta')?.setValue(date);
       this.search();
+      this.setEmpresa();
     }
   }
 
-  get colours() {
-    return this.stylesService.getStyle()
+  private getEmpresa(id?: { id: number }): void {
+    let params: { id: number } | null = null;
+    if (id) params = id;
+    this._empresas.getEmpresas(params).subscribe((res: any) => {
+      this.empresas$ = res;
+      this.filtrar();
+    });
   }
 
+  private setForm(): void {
+    this.form = new FormGroup({
+      id_empresa: new FormControl(null, Validators.required),
+      fecha_desde: new FormControl(null),
+      fecha_hasta: new FormControl(null),
+    });
+  }
+
+  private setEmpresa(): void {
+    if (this.empresas$) {
+      if (this.empresas$.length === 1) {
+        this.form.get('id_empresa')?.setValue(this.empresa.id);
+        this.form.get('id_empresa')?.disable();
+      }
+    }
+  }
 }

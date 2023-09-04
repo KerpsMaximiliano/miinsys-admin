@@ -116,6 +116,7 @@ export class PlanificacionComponent implements OnInit {
 
   public clean(): void {
     this.formGroup.reset();
+    this.setEmpresa();
   }
 
   public get colours(): any {

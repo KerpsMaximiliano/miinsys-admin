@@ -67,8 +67,28 @@ export class GestionIncidenciasComponent implements OnInit {
     private router: Router,
     public dialog: MatDialog
   ) {
-    this.setForm();
-    this.setDisplayedColumns();
+    this.form = new FormGroup({
+      id_empresa: new FormControl(null),
+      descripcion: new FormControl(null),
+      id_cuestionario: new FormControl(null),
+      rut_responsable: new FormControl(null),
+      rut_supervisor: new FormControl(null),
+      id_estado: new FormControl(null),
+      fecha_desde: new FormControl(null),
+      fecha_hasta: new FormControl(null),
+    });
+
+    this.displayedColumns = [
+      'descripcion_empresa',
+      'descripcion_accion',
+      'descripcion_cuestionario',
+      'responsable',
+      'supervisor',
+      'dias_abierto',
+      'fecha_alta',
+      'descripcion_estado',
+      'acciones',
+    ];
   }
 
   ngOnInit(): void {
@@ -104,11 +124,13 @@ export class GestionIncidenciasComponent implements OnInit {
     this.getGestiones(params);
   }
 
-  public empresaChange(event: any): void {
+  public empresaChange(event?: any): void {
+    let evento: any | number = this.empresa.id;
+    if (event) evento = event.value;
     this.form.get('cuestionario')?.setValue(null);
     this.form.get('cuestionario')?.disable();
     this._cuestionario
-      .getCuestionariosByParams({ id_empresa: event.value })
+      .getCuestionariosByParams({ id_empresa: evento })
       .subscribe((res: any) => {
         this.cuestionarios$ = res;
         this.form.get('cuestionario')?.enable();
@@ -210,6 +232,7 @@ export class GestionIncidenciasComponent implements OnInit {
     this._empresas.getEmpresas(params).subscribe((res: any) => {
       this.empresas$ = res;
       this.setEmpresa();
+      this.empresaChange();
     });
   }
 
@@ -240,19 +263,6 @@ export class GestionIncidenciasComponent implements OnInit {
     this.sort.disableClear = true;
   }
 
-  private setForm(): void {
-    this.form = new FormGroup({
-      id_empresa: new FormControl(null),
-      descripcion: new FormControl(null),
-      id_cuestionario: new FormControl(null),
-      rut_responsable: new FormControl(null),
-      rut_supervisor: new FormControl(null),
-      id_estado: new FormControl(null),
-      fecha_desde: new FormControl(null),
-      fecha_hasta: new FormControl(null),
-    });
-  }
-
   private setEmpresa(): void {
     if (this.empresas$) {
       if (this.empresas$.length === 1) {
@@ -260,20 +270,6 @@ export class GestionIncidenciasComponent implements OnInit {
         this.form.get('id_empresa')?.disable();
       }
     }
-  }
-
-  private setDisplayedColumns(): void {
-    this.displayedColumns = [
-      'descripcion_empresa',
-      'descripcion_accion',
-      'descripcion_cuestionario',
-      'responsable',
-      'supervisor',
-      'dias_abierto',
-      'fecha_alta',
-      'descripcion_estado',
-      'acciones',
-    ];
   }
 }
 
